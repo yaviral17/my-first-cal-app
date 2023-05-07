@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
+import 'package:function_tree/function_tree.dart';
 import 'package:my_first_cal_app/components/calButton.dart';
 
 class CalculatorScreen extends StatefulWidget {
@@ -11,13 +14,58 @@ class CalculatorScreen extends StatefulWidget {
 }
 
 class _CalculatorScreenState extends State<CalculatorScreen> {
-  double fontSize1 = 64;
-  double fontSize2 = 48;
+  double resultFontSize = 48;
+  double expressionFontSize = 38;
 
-  String eval = "0";
-  String ans = "0";
+  String expression = "0";
+  String result = "0";
 
-  void calculation(String text) {}
+  void calculation(String buttonText) {
+    setState(() {
+      if (buttonText == "AC") {
+        expression = "0";
+        result = "0";
+        expressionFontSize = 48;
+        resultFontSize = 38;
+      } else if (buttonText == "⌫") {
+        expressionFontSize = 48;
+        resultFontSize = 38;
+        expression = expression.substring(0, expression.length - 1);
+
+        if (expression == "") {
+          expression = "0";
+        }
+      } else if (buttonText == "=") {
+        expressionFontSize = 38;
+        resultFontSize = 48;
+        try {
+          String finalExp = expression.replaceAll('×', '*');
+
+          finalExp = finalExp.replaceAll('÷', '/');
+          finalExp = finalExp.replaceAll('–', '-');
+
+          log(expression);
+          log(finalExp);
+          // log(finalExp);
+          num res = finalExp.interpret();
+          // log(res.toString());
+          result = res.toString().split('.').last == "0"
+              ? res.toString().split('.').first
+              : res.toString();
+        } catch (e) {
+          result = "Error";
+        }
+      } else {
+        expressionFontSize = 48;
+        resultFontSize = 38;
+        if (expression == "0") {
+          expression = buttonText;
+        } else {
+          expression = expression + buttonText;
+        }
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,24 +84,24 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32.0),
               child: Text(
-                eval,
+                expression,
                 style: TextStyle(
-                  color: fontSize1 > fontSize2
+                  color: expressionFontSize > resultFontSize
                       ? Colors.white
                       : Colors.grey.shade700,
-                  fontSize: fontSize1,
+                  fontSize: expressionFontSize,
                 ),
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32.0),
               child: Text(
-                ans,
+                result,
                 style: TextStyle(
-                  color: fontSize1 < fontSize2
+                  color: expressionFontSize < resultFontSize
                       ? Colors.white
                       : Colors.grey.shade700,
-                  fontSize: fontSize2,
+                  fontSize: resultFontSize,
                 ),
               ),
             ),
@@ -71,10 +119,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     },
                   ),
                   Buttons(
-                    text: '+/-',
+                    text: '÷',
                     textColor: Colors.black,
                     buttonColor: Colors.grey,
-                    onTap: () => calculation("+/-"),
+                    onTap: () => calculation("÷"),
                   ),
                   Buttons(
                     text: '%',
@@ -83,10 +131,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     onTap: () => calculation("%"),
                   ),
                   Buttons(
-                    text: '÷',
+                    text: '⌫',
                     textColor: Colors.white,
                     buttonColor: Colors.orange,
-                    onTap: () => calculation("÷"),
+                    onTap: () => calculation("⌫"),
                   ),
                 ],
               ),
